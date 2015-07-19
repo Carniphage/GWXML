@@ -1,27 +1,32 @@
 # GWXML
-A lightweight Swift XML Parser
-------------------------------
+A lightweight XML Parser for Swift
+--------------------------------
 
-This is intended to be a simple to use XML parser for Swift. 
-It is not a wrapper around NSXML, but native code.  
+This is intended to be a simple-to-use XML parser for Swift. 
+It is not a wrapper around NSXML.  
  
-It is closely based on TBXML 
+It is closely based on TBXML, and operates in an identical way
 [http://www.tbxml.co.uk/TBXML/TBXML_Free.html]  
  
-To use.
+Usage
+-----
 Just include this file in your project. 
 A framework for this little code seems like overkill  .
+
  
 The content of the file is divided into XMLElement(s) and XMLAttribute(s).
-XMLElement is an object
-XMLAttribute is a struct  
+
+* XMLElement is an object
+* XMLAttribute is a struct  
  
  
-To parse an XML file in the app bundle
+To parse an existing XML file in the app bundle
 
 `let xmlRootElement:XMLElement = GWXML(bundleFile:"example.xml").rootElement`  
 
- 
+This returns a root element which is parent to the entire parsed structure.
+  
+  
 to get an element name, or text
   
   `let name = element.name`
