@@ -38,43 +38,8 @@
 
 import Foundation
 
-//should make this comply to the error protocol.
-public enum XMLError
-{
-    case NO_ERROR
-    case DATA_NIL
-    case DECODE_FAILURE
-    case MEMORY_ALLOC_FAILURE
-    case FILE_NOT_FOUND_IN_BUNDLE
-    case ELEMENT_IS_NIL
-    case ELEMENT_NAME_IS_NIL
-    case ATTRIBUTE_IS_NIL
-    case ATTRIBUTE_NAME_IS_NIL
-    case ELEMENT_TEXT_IS_NIL
-    case PARAM_NAME_IS_NIL
-    case ATTRIBUTE_NOT_FOUND
-    case ELEMENT_NOT_FOUND
-    case UNMATCHED_ELEMENTS
-    
-    //TODO: Write this
-    func asString()->String
-    {
-        return "XML Error"
-    }
-}
 
-
-enum XMLFragmentType
-{
-    case ELEMENT_START
-    case ELEMENT_END
-    case SELF_CLOSING_ELEMENT
-    case COMMENT_ELEMENT
-    case CDATA_ELEMENT          //CData content - not supported yet
-    case SYNTAX_ERROR
-}
-
-
+//Attributes are simple name / value pairs
 public struct XMLAttribute
 {
     let name:String
@@ -94,7 +59,9 @@ public struct XMLAttribute
 
 }
 
-typealias BytePointer = UnsafeMutablePointer<Int8>         //this looks less scary
+
+
+// XMLElement - 
 
 public class XMLElement
 {
@@ -105,7 +72,7 @@ public class XMLElement
     
     //no constructor yet
     
-    func childElementNamed(name:String) -> XMLElement?
+    public func childElementNamed(name:String) -> XMLElement?
     {
         for child in children
         {
@@ -118,7 +85,7 @@ public class XMLElement
     }
     
     
-    func valueOfAttributeNamed(name:String) -> String?
+    public func valueOfAttributeNamed(name:String) -> String?
     {
         for attribute in attributes
         {
@@ -131,6 +98,8 @@ public class XMLElement
     }
     
     
+    
+    //list prints the tree for debugging purposes
     public func list(depth:Int)         //list out the XML graph as text
     {
         func printSpaces(count:Int)
@@ -164,8 +133,51 @@ public class XMLElement
 }
 
 
+
+//This class puts the parse functionality into a standalone class. But it could be placed into element?
 public class GWXML
 {
+    
+    typealias BytePointer = UnsafeMutablePointer<Int8>         //this looks less scary
+
+    
+    //should make this comply to the error protocol.
+    public enum XMLError
+    {
+        case NO_ERROR
+        case DATA_NIL
+        case DECODE_FAILURE
+        case MEMORY_ALLOC_FAILURE
+        case FILE_NOT_FOUND_IN_BUNDLE
+        case ELEMENT_IS_NIL
+        case ELEMENT_NAME_IS_NIL
+        case ATTRIBUTE_IS_NIL
+        case ATTRIBUTE_NAME_IS_NIL
+        case ELEMENT_TEXT_IS_NIL
+        case PARAM_NAME_IS_NIL
+        case ATTRIBUTE_NOT_FOUND
+        case ELEMENT_NOT_FOUND
+        case UNMATCHED_ELEMENTS
+        
+        //TODO: Write this
+        func asString()->String
+        {
+            return "XML Error"
+        }
+    }
+
+    
+    enum XMLFragmentType
+    {
+        case ELEMENT_START
+        case ELEMENT_END
+        case SELF_CLOSING_ELEMENT
+        case COMMENT_ELEMENT
+        case CDATA_ELEMENT          //CData content - not supported yet
+        case SYNTAX_ERROR
+    }
+    
+    
     //make this an enum
     let spaceASCII:Int8 = 32
     let exclamationASCII:Int8 = 33
@@ -182,6 +194,7 @@ public class GWXML
     
     public var rootElement:XMLElement? = nil
     public var error:XMLError = .NO_ERROR
+    
     
     public init(data:NSData?)
     {
