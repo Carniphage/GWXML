@@ -2,7 +2,7 @@
 A lightweight XML Parser for Swift
 --------------------------------
 
-This is intended to be a simple-to-use XML parser for Swift. 
+This is intended to be a simple-to-use XML DOM-style parser for Swift. 
 It is not a wrapper around NSXML.  
  
 It is closely based on TBXML, and operates in an identical way
@@ -20,16 +20,16 @@ The content of the file is divided into XMLElement(s) and XMLAttribute(s).
 * XMLAttribute is a struct  
  
  
-To parse an existing XML file in the app bundle
+To read an existing XML file in the app bundle
 
 `let xmlRootElement:XMLElement = GWXML(bundleFile:"example.xml").rootElement`  
 
-This returns a root element which is parent to the entire parsed structure.
+This returns a root element which is a parent to the entire XML document structure.
   
   
 to get an element name, or text
   
-  `let name = element.name`
+  `let name = element.name    //returns swift string`
   `let text = element.text    //returns swift string`  
   
   
@@ -57,7 +57,10 @@ to find value of named attribute
  
 to find named child element
  
-` floatElement = element.childElementNamed("float_array")`  
+` floatElement = element.childElementNamed("float_array")` 
+
+Optionals are used to indicate when finds are not successful. 
+
 
 
 Notes
