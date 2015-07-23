@@ -35,6 +35,9 @@
 //  let width:String? = element.valueOfAttributeNamed("width")
 //
 
+//  Todo 
+// We should make this a "throws" type action - if the XML is malformed in some way
+
 
 import Foundation
 
@@ -169,33 +172,41 @@ public class GWXML
     
     enum XMLFragmentType
     {
-        case ELEMENT_START
-        case ELEMENT_END
-        case SELF_CLOSING_ELEMENT
-        case COMMENT_ELEMENT
-        case CDATA_ELEMENT          //CData content - not supported yet
-        case SYNTAX_ERROR
+        case ElementStart
+        case ElementEnd
+        case SelfClosingElement
+        case CommentElement
+        case CDataElement          //CData content - not supported yet
+        case SyntaxError
     }
     
     
+    //Common Ascii hardcoded values
+    enum ASCII
+    {
+        static let space:Int8 = 32              //notice this is not really an enum but just a namespace
+        static let exclamation:Int8 = 33
+        static let question:Int8 = 63
+        static let slash:Int8 = 47
+        static let backslash:Int8 = 92
+        static let quotes:Int8 = 34
+        static let quote:Int8 = 39
+        static let equals:Int8 = 61
+        static let leftAngle:Int8 = 60
+        static let rightAngle:Int8 = 62
+        static let rightSquare:Int8 = 93
+        
+    }
+    
     //make this an enum
-    let spaceASCII:Int8 = 32
-    let exclamationASCII:Int8 = 33
-    let questionASCII:Int8 = 63
-    let slashASCII:Int8 = 47
-    let backslashASCII:Int8 = 92
-    let quotesASCII:Int8 = 34
-    let quoteASCII:Int8 = 39
-    let equalsASCII:Int8 = 61
-    let leftAngleASCII:Int8 = 60
-    let rightAngleASCII:Int8 = 62
-    let rightSquareASCII:Int8 = 93
+    
     
     
     public var rootElement:XMLElement? = nil
     public var error:XMLError = .NO_ERROR
     
     
+    //This should throw
     public init(data:NSData?)
     {
         if let data = data
@@ -219,6 +230,7 @@ public class GWXML
     }
     
     
+    //this should throw
     public convenience init(bundleFile:String)
     {
         if let bundleResourcePath = NSBundle.mainBundle().resourcePath
@@ -237,6 +249,8 @@ public class GWXML
     
     
     
+    //This is a recursive function. 
+    //This should throw
     func scanXMLBlock(startPointer:BytePointer, _ endPointer:BytePointer, inout _ readPointer:BytePointer) -> (XMLElement?,XMLError)
     {
         //let blockStart = blockPointer
@@ -257,7 +271,7 @@ public class GWXML
             
             switch fragType
             {
-            case .ELEMENT_START:
+            case .ElementStart:
                 
                 if let element = element
                 {
@@ -291,7 +305,7 @@ public class GWXML
                         //scan attributes here
                         
                         //test for self closing xml here
-                        if (fragEndPointer - 1).memory == slashASCII
+                        if (fragEndPointer - 1).memory == ASCII.slash
                         {
                             isElementComplete = true
                         }
@@ -303,7 +317,7 @@ public class GWXML
                     
                 }
                 
-            case .ELEMENT_END:
+            case .ElementEnd:
                 if let element = element
                 {
                     if elementStartEndPointer != nil
@@ -327,11 +341,11 @@ public class GWXML
                     isElementComplete = true
                 }
                 
-            case .CDATA_ELEMENT:
+            case .CDataElement:
                 print("")
                 
                 
-            case .COMMENT_ELEMENT:
+            case .CommentElement:
                 readPointer = fragEndPointer + 1        //comment is skipped
                 
 
@@ -351,20 +365,21 @@ public class GWXML
     }
 
     
+    //Little state machine to handle attribute parsing
     func parseAttributes(startPointer:BytePointer , _ endPointer:BytePointer , inout _ readPointer:BytePointer) -> [XMLAttribute]
     {
         
         enum XMLAttributeMode
         {
-            case ATTRIBUTE_NAME_START
-            case ATTRIBUTE_NAME_END
-            case ATTRIBUTE_VALUE_START
-            case ATTRIBUTE_VALUE_END
+            case AttrNameStart
+            case AttrNameEnd
+            case AttrValueStart
+            case AttrValueEnd
             //case TBXML_ATTRIBUTE_CDATA_END
         }
         
         var attributes:[XMLAttribute] = []
-        var mode:XMLAttributeMode = .ATTRIBUTE_NAME_START
+        var mode:XMLAttributeMode = .AttrNameStart
         var nameStart:BytePointer = nil
         var valueStart:BytePointer = nil
         var isSingleQuote:Bool = false
@@ -373,30 +388,33 @@ public class GWXML
         {
             switch (mode) 
             {
-            case .ATTRIBUTE_NAME_START:
-                if (char.memory != spaceASCII) 
+            case .AttrNameStart:
+                if (char.memory != ASCII.space) 
                 { 
                     nameStart = char;
-                    mode = .ATTRIBUTE_NAME_END
+                    mode = .AttrNameEnd
                 }
-            case .ATTRIBUTE_NAME_END:
-                if (char.memory == spaceASCII || char.memory == equalsASCII) 
+                
+            case .AttrNameEnd:
+                if (char.memory == ASCII.space || char.memory == ASCII.equals) 
                 {
                     char.memory = 0;
-                    mode = .ATTRIBUTE_VALUE_START;
+                    mode = .AttrValueStart;
                 }
-            case .ATTRIBUTE_VALUE_START:
-                if (char.memory != spaceASCII)
+                
+            case .AttrValueStart:
+                if (char.memory != ASCII.space)
                 {
-                    if char.memory == quotesASCII || char.memory == quoteASCII
+                    if char.memory == ASCII.quotes || char.memory == ASCII.quote
                     {
                         valueStart = char+1;
-                        mode = .ATTRIBUTE_VALUE_END;
-                        isSingleQuote = ( char.memory == quoteASCII)
+                        mode = .AttrValueEnd;
+                        isSingleQuote = ( char.memory == ASCII.quote)
                     }
                 }
-            case .ATTRIBUTE_VALUE_END:
-                if (char.memory == quotesASCII && !isSingleQuote)  || ( char.memory == quoteASCII && isSingleQuote)
+                
+            case .AttrValueEnd:
+                if (char.memory == ASCII.quotes && !isSingleQuote)  || ( char.memory == ASCII.quote && isSingleQuote)
                 {
                     char.memory = 0;
                     
@@ -413,7 +431,7 @@ public class GWXML
                     valueStart = nil;
                     
                     // start looking for next attribute
-                    mode = .ATTRIBUTE_NAME_START;
+                    mode = .AttrNameStart;
                 }
                 
 
@@ -450,7 +468,7 @@ public class GWXML
         {
             //scan to the end
             readPointer = strstr(elementStart,"-->") + 3;
-            return .COMMENT_ELEMENT
+            return .CommentElement
         }
         
         let isCDATA:Int32 = strncmp(elementStart,"<![CDATA[",9)
@@ -458,28 +476,28 @@ public class GWXML
         {
             //currently this is not being handled
             //scan to the end
-            return .CDATA_ELEMENT
+            return .CDataElement
         }
     
         let fragEndPointer = scanForElementEnd(elementStart + 1)
         
         let nameStartPointer = elementStart + 1
         
-        if (nameStartPointer.memory == questionASCII || nameStartPointer.memory == exclamationASCII)
+        if (nameStartPointer.memory == ASCII.question || nameStartPointer.memory == ASCII.exclamation)
         {
             readPointer = fragEndPointer
-            return .COMMENT_ELEMENT
+            return .CommentElement
         }
         
-        if nameStartPointer.memory == slashASCII
+        if nameStartPointer.memory == ASCII.slash
         {
             readPointer = fragEndPointer
-            return .ELEMENT_END
+            return .ElementEnd
         }
     
 
         readPointer = fragEndPointer
-        return .ELEMENT_START
+        return .ElementStart
     }
     
     
