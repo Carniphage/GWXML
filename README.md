@@ -35,10 +35,10 @@ to get an element name, or text
   
 to iterate through childen
 
-`for child in element.children`
-  `{`
-`    ...  `  
- ` } v 
+`for child in element.children` 
+  `{ ` 
+`    ... `   
+ ` } v ` 
  
 
 to iterate through attributes
