@@ -35,19 +35,19 @@ to get an element name, or text
   
 to iterate through childen
 
-`for child in element.children
-  {
-    ...    
-  }`  
+`for child in element.children`
+  `{`
+`    ...  `  
+ ` } v 
  
 
 to iterate through attributes
   
-`for attribute in element.attributes
-{
-        let attributeName = attribute.name
-        let attributeValue = attribute.value
-}`  
+`for attribute in element.attributes`
+`{`
+`        let attributeName = attribute.name`
+`        let attributeValue = attribute.value`
+`}`  
 
  
 to find value of named attribute
